@@ -14,6 +14,7 @@ use hir::def::DefKind;
 use rustc_ast::Mutability;
 use rustc_data_structures::fx::FxHashSet;
 use rustc_hir as hir;
+use rustc_middle::bug;
 use rustc_middle::mir::interpret::ValidationErrorKind::{self, *};
 use rustc_middle::mir::interpret::{
     ExpectedKind, InterpError, InterpErrorInfo, InvalidMetaKind, Misalignment, PointerKind,
@@ -21,7 +22,6 @@ use rustc_middle::mir::interpret::{
 };
 use rustc_middle::ty::layout::{LayoutCx, LayoutOf, TyAndLayout};
 use rustc_middle::ty::{self, Ty};
-use rustc_middle::{bug, span_bug};
 use rustc_span::symbol::{Symbol, sym};
 use rustc_target::abi::{
     Abi, FieldIdx, FieldsShape, Scalar as ScalarAbi, Size, VariantIdx, Variants, WrappingRange,
@@ -623,14 +623,14 @@ impl<'rt, 'tcx, M: Machine<'tcx>> ValidityVisitor<'rt, 'tcx, M> {
                         if ptr_expected_mutbl == Mutability::Mut
                             && alloc_actual_mutbl == Mutability::Not
                         {
-                            if !self.ecx.tcx.sess.opts.unstable_opts.unleash_the_miri_inside_of_you
-                            {
-                                span_bug!(
-                                    self.ecx.tcx.span,
-                                    "the static const safety checks accepted mutable references they should not have accepted"
-                                );
-                            }
-                            throw_validation_failure!(self.path, MutableRefToImmutable);
+                                // if !self.ecx.tcx.sess.opts.unstable_opts.unleash_the_miri_inside_of_you
+                                // {
+                                //     span_bug!(
+                                //         self.ecx.tcx.span,
+                                //         "the static const safety checks accepted mutable references they should not have accepted"
+                                //     );
+                                // }
+                                throw_validation_failure!(self.path, MutableRefToImmutable);
                         }
                         // In a const, everything must be completely immutable.
                         if matches!(self.ctfe_mode, Some(CtfeValidationMode::Const { .. })) {
